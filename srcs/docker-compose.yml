@@ -1,0 +1,66 @@
+name: inception
+
+services:
+	mariadb:
+		build: ./requirements/mariadb
+		container_name: mariadb
+		image: mariadb
+		volumes:
+			mariadb_data:/var/lib/mysql
+		restart: always
+		secrets: 
+			-db_root_password
+			-db_password
+		environement:
+			-WORDPRESS_DB_HOST = mariadb
+			-WORDPRESS_DB_NAME = ${MYSQL_DB}
+			-WORDPRESS_USER_NAME = ${MYSQL_USER}
+			-WORDPRESS_DB_PASSWORD_FILE = /run/secrets/db_password
+			-WORDPRESS_DB_ROOT_PASSWORD_FILE = /run/secrets/db_root_password
+			
+
+	nginx:
+		build: ./requirements/nginx
+		container_name: nginx
+		image: nginx
+		volumes:
+			wordpress_data:/var/www/html
+		ports:
+			- 443:443
+		restart: always
+
+
+	wordpress:
+		build: ./requirements/wordpress
+		container_name: wordpress
+		image: wordpress
+		volumes:
+			wordpress_data:/var/www/html
+		restart: always
+		
+secrets:
+	db_root_password :
+		-file: ../secrets/db_root_password.txt
+	db_password :
+		-file: ../secrets/db_password.txt
+
+
+networks:
+	inception:
+
+
+
+volumes:
+	mariadb_data:
+		driver: local
+		driver_opts:
+			type: none
+			o: bind
+			device: /home/bessabri/data/mariadb
+		
+	wordpress_data:
+		driver: local
+		driver_opts:
+			type: none
+			o: bind
+			device: /home/bessabri/data/wordpress
