@@ -1,66 +1,92 @@
 name: inception
-
 services:
-	mariadb:
-		build: ./requirements/mariadb
-		container_name: mariadb
-		image: mariadb
-		volumes:
-			mariadb_data:/var/lib/mysql
-		restart: always
-		secrets: 
-			-db_root_password
-			-db_password
-		environement:
-			-WORDPRESS_DB_HOST = mariadb
-			-WORDPRESS_DB_NAME = ${MYSQL_DB}
-			-WORDPRESS_USER_NAME = ${MYSQL_USER}
-			-WORDPRESS_DB_PASSWORD_FILE = /run/secrets/db_password
-			-WORDPRESS_DB_ROOT_PASSWORD_FILE = /run/secrets/db_root_password
-			
+  mariadb:
+    build: ./requirements/mariadb
+    container_name: mariadb
+    image: mariadb
+    volumes:
+      - mariadb_data:/var/lib/mysql
+    restart: always
+    secrets: 
+      - db_root_password
+      - db_password
+    environment:
+      - WORDPRESS_DB_NAME=${MARIA_DB}
+      - WORDPRESS_USER_NAME=${MARIA_USER}
+      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
+      - WORDPRESS_DB_ROOT_PASSWORD_FILE=/run/secrets/db_root_password
+    networks:
+      - inception
+      
 
-	nginx:
-		build: ./requirements/nginx
-		container_name: nginx
-		image: nginx
-		volumes:
-			wordpress_data:/var/www/html
-		ports:
-			- 443:443
-		restart: always
+  # nginx:
+  # 	build: ./requirements/nginx
+  # 	container_name: nginx
+  # 	image: nginx
+  # 	volumes:
+  # 		wordpress_data:/var/www/html
+  # 	ports:
+  # 		- 443:443
+  # 	restart: always
+  # 	networks:
+  # 		inception
+  
+  # WORDPRESS ALWAYS USER NO NEED FOR ROOT
+  wordpress:
+    build: ./requirements/wordpress
+    container_name: wordpress
+    image: wordpress
+    volumes:
+      - wordpress_data:/var/www/html
+    restart: always
+    networks:
+      - inception
+    secrets:
+      - db_password
+      - wp_admin_password
+      - wp_user_password
+    environment:
+      - WORDPRESS_DB_HOST=mariadb
+      - WORDPRESS_DB_NAME=${MARIA_DB}
+      - WORDPRESS_USER_NAME=${MARIA_USER}
+      - WORDPRESS_DB_PASSWORD_FILE=/run/secrets/db_password
+      - WP_URL=${DOMAIN_NAME}
+      - WP_ADMIN_USER=${WP_ADMIN_USER}
+      - WP_ADMIN_EMAIL=${WP_ADMIN_EMAIL}
+      - WP_ADMIN_PASSWORD_FILE=/run/secrets/wp_admin_password
+      - WP_USER=${WP_USER}
+      - WP_USER_EMAIL=${WP_USER_EMAIL}
+      - WP_USER_PASSWORD_FILE=/run/secrets/wp_user_password
 
-
-	wordpress:
-		build: ./requirements/wordpress
-		container_name: wordpress
-		image: wordpress
-		volumes:
-			wordpress_data:/var/www/html
-		restart: always
-		
+    
+    
 secrets:
-	db_root_password :
-		-file: ../secrets/db_root_password.txt
-	db_password :
-		-file: ../secrets/db_password.txt
+  db_root_password:
+    file: ../secrets/db_root_password.txt
+  db_password :
+    file: ../secrets/db_password.txt
+  wp_admin_password:
+    file: ../secrets/wp_admin_password.txt
+  wp_user_password:
+    file: ../secrets/wp_user_password.txt
 
 
 networks:
-	inception:
+  inception:
 
 
 
 volumes:
-	mariadb_data:
-		driver: local
-		driver_opts:
-			type: none
-			o: bind
-			device: /home/bessabri/data/mariadb
-		
-	wordpress_data:
-		driver: local
-		driver_opts:
-			type: none
-			o: bind
-			device: /home/bessabri/data/wordpress
+  mariadb_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/bessabri/data/mariadb
+    
+  wordpress_data:
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /home/bessabri/data/wordpress

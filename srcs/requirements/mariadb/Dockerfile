@@ -11,6 +11,9 @@ COPY tools/mariadb.sh /usr/local/bin/mariadb.sh
 
 RUN chmod +x /usr/local/bin/mariadb.sh
 
+RUN mkdir -p /run/mysqld &&\
+    chown -R mysql:mysql /run/mysqld
+
 EXPOSE 3306
 
 
