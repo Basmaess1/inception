@@ -1,4 +1,4 @@
-*This project has been created as part of the 42 curriculum by jabouhni.*
+*This project has been created as part of the 42 curriculum by bessabri.*
 
 ## Description
 Inception is a system administration project focused on containerization and microservices architecture using Docker. The goal is to build a secure, isolated, and fully automated web infrastructure composed of three distinct services running in separate containers based on `debian:bookworm`:
